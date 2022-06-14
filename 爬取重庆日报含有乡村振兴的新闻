@@ -1,1 +1,99 @@
-士大夫
+import requests
+from bs4 import BeautifulSoup
+import re
+import urllib.request
+import requests
+from lxml import etree
+import pandas as pd
+import time
+import sys
+import datetime
+
+headers = {
+    "User-Agent": "Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14"
+}
+
+list_banmian1 = []
+list_banmianall = []
+list_banmianalllll = []
+
+list_context = []
+list_head = []
+list_date = []
+list_version = []
+list_location = []
+
+
+list_all = []
+list_conttt=[]      #含有乡村振兴关键词的
+begin = datetime.date(2017,10,1)
+end = datetime.date(2020,12,31)
+d = begin
+delta = datetime.timedelta(days=1)
+while d <= end:
+    Y = d.strftime("%Y-%m")
+    D = d.strftime("%d")
+    d += delta
+
+
+    f1 = 'https://epaper.cqrb.cn/cqrb/'
+    f2 = '/001/node.htm'
+    html = f1+Y+"/"+D+f2
+
+    list_banmian1.append(html)#获取到每天的第一版
+
+    try:
+
+        response = requests.get(html, headers=headers)
+        response.encoding = "utf-8"
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "lxml")
+
+            for link in soup.find_all(name='a', attrs={"href": re.compile(r'/html/cqrb/20..-../../.../node.htm')})[1:]:
+
+
+                a = link.get('href') #/html/cqrb/2017-10/01/001/node.htm
+                a = 'https://epaper.cqrb.cn/' + a[6:]
+                list_banmianall.append(a)   #获得所有版面的链接
+
+                #print(a)
+
+                response1 = requests.get(a, headers=headers)
+                response1.encoding = "utf-8"
+                if response1.status_code == 200:
+                    soup1 = BeautifulSoup(response1.text, "lxml")
+                    for link1 in soup1.find_all(name='area'):
+                        b = link1.get('href')
+                        b = a[:-8] + b
+                        print(b)
+                        list_banmianalllll.append(b)
+
+                        response2 = requests.get(b, headers=headers)#所有新闻网页
+                        response2.encoding = "utf-8"
+                        if response2.status_code == 200:
+                            soup2 = BeautifulSoup(response2.text, "lxml")
+                            head = soup2.find_all('strong')[-1].text
+                            list_head.append(head)#标题
+                            #print(head)
+                            html_context = soup2.find_all('p')
+                            context = ''
+                            for i in html_context:
+                                context += i.text
+                            #print(context)
+                            #list_context.append(context)#正文
+                            date1 = b[28:38]
+                            version = b[40:42]
+                            # list_date.append(date1)
+                            # list_version.append(version)
+                            print([b,head, date1, version, context])
+                            list_all.append([b,head, date1, version, context])
+
+    except Exception as e:
+        #访问异常的错误编号和详细信息
+        print(e.args)
+        print(str(e))
+        print(repr(e))
+
+df = pd.DataFrame(list_all)
+df.to_csv('重庆日报所有新闻.csv', encoding="utf_8_sig")
+print("全部抓取完成")
