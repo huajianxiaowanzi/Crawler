@@ -5,10 +5,10 @@ import requests
 from lxml import etree
 
 def sendmessage():
-    from_addr = 'b1695316070@163.com'  # 邮件发送账号
-    to_addrs = '1695316070@qq.com'  # 接收邮件账号
-    qqCode = 'MTBALBLNWGIYCEIP'  # 授权码（这个要填自己获取到的）
-    smtp_server = 'smtp.163.com'  # 固定写死
+    from_addr = ''  # 邮件发送账号
+    to_addrs = ''  # 接收邮件账号
+    qqCode = ''  # 授权码（这个要填自己获取到的）
+    smtp_server = ''  # 固定写死
     smtp_port = 465  # 固定端口
     # 配置服务器
     stmp = smtplib.SMTP_SSL(smtp_server, smtp_port)
