@@ -1,0 +1,92 @@
+# _*_ coding:gbk _*_
+import json
+import time
+
+import csv
+import pandas as pd
+import requests
+'''
+1.用新地址替换就地址
+2.当地址缺少省、市、区时用其他字段补全
+'''
+def data_presolve(df):
+    #if df[]
+
+    return df
+
+# 地址转经纬度
+def tx_address(df):
+    # 将文本地址拼接到url后调用腾讯api获取经纬度
+    # api返回的是json数据
+    time.sleep(0.26)
+
+    tx_key= '&key=AZJBZ-ESPLP-E4MD5-LQZ7P-NGHPT-U7FKC'  # 这个key是我在腾讯地图申请的，每天能用10000次
+    tx_url = 'https://apis.map.qq.com/ws/geocoder/v1/?address='
+    url = tx_url+str(df['公司名称'])+tx_key
+    result = requests.get(url)
+    jdon_str = json.loads(result.text)
+    if jdon_str['status']==347:     # 没有该地址的经纬度，换字段后再调用接口
+        url = tx_url + str(df['注册地址']) + tx_key     # 注册地址
+        #rint(url)
+        result = requests.get(url)
+        jdon_str = json.loads(result.text)
+
+    if jdon_str['status']==0:
+        #rint(jdon_str['result']['location'])
+
+        return [jdon_str['result']['location']['lng'],jdon_str['result']['location']['lat']]
+    else:
+        return ['-','-']
+
+
+def tx_address2(df):
+    time.sleep(0.26)
+
+    tx_key = ''  #需要自己申请
+    tx_url = 'https://apis.map.qq.com/ws/geocoder/v1/?address='
+    url = tx_url + str(df['注册地址']) + tx_key
+    result = requests.get(url)
+    jdon_str = json.loads(result.text)
+    if jdon_str['status'] == 347:
+        url = tx_url + str(df['公司名称']) + tx_key         # 公司名称
+        #rint(url)
+        result = requests.get(url)
+        jdon_str = json.loads(result.text)
+
+    if jdon_str['status'] == 0:
+        #rint(jdon_str['result']['location'])
+
+        #return [jdon_str['result']['location']['lng'],jdon_str['result']['location']['lat']]
+        return jdon_str['result']['location']['lng'],jdon_str['result']['location']['lat']
+    else:
+        return ['-','-']
+# 经纬度转地址
+def tx_location(df):
+
+    return df
+
+# 计算经纬度间的距离
+def tx_compute_location(df):
+    return df
+
+if __name__ == '__main__':
+
+    flag = 1   # 1 腾讯地图,2 高德地图，2没实现
+    df = pd.read_excel('E:\python\pc\pc\车险\全国维修厂.xlsx')
+    df = df[df['所属省份']=='江西省']
+    tmp = df['公司名称']
+
+    if flag == 1:
+        headers = ['公司名称','location_lng','location_lat']
+        with open('江西维修厂经纬度.csv', 'a', encoding='utf8')as fp:
+            f_csv = csv.writer(fp)
+            f_csv.writerow(headers)
+            for index, row in df.iterrows():
+                try:
+                    lng_lat = tx_address(row)
+                    #print(lng_lat)
+                    rows = [row['公司名称'],lng_lat[0],lng_lat[1]]
+                    print(rows)
+                    f_csv.writerow(rows)
+                except Exception as e:
+                    pass
