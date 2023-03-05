@@ -20,7 +20,7 @@ def tx_address(df):
     # api返回的是json数据
     time.sleep(0.26)
 
-    tx_key= '&key=AZJBZ-ESPLP-E4MD5-LQZ7P-NGHPT-U7FKC'  # 这个key是我在腾讯地图申请的，每天能用10000次
+    tx_key= ''  # 这个key要在腾讯地图申请的，每天能用10000次
     tx_url = 'https://apis.map.qq.com/ws/geocoder/v1/?address='
     url = tx_url+str(df['公司名称'])+tx_key
     result = requests.get(url)
